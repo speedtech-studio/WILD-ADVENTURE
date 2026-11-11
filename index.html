@@ -108,7 +108,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
 <div class="map-border">
  <div class="map-scroll" id="mapScroll" tabindex="0" aria-label="Adventure Map. On a phone, swipe sideways to explore the whole map.">
   <div class="map-stage" id="mapStage">
-   <img src="jumanji-adventure-map.png" alt="Pixel jungle map with five mission signboards connected by a red dotted trail, from Start to Finish" draggable="false">
+   <img src="assets/jumanji-adventure-map.png" alt="Pixel jungle map with five mission signboards connected by a red dotted trail, from Start to Finish" draggable="false">
    <div class="map-shade"></div>
    <button class="mission-hotspot" data-mission="1" style="left:20%;top:31%;width:18.5%;height:17%" aria-label="Mission 1: Sing Into the Wild"></button>
    <button class="mission-hotspot" data-mission="2" style="left:44%;top:26%;width:18.7%;height:17%" aria-label="Mission 2: Explore the Wild"></button>
@@ -143,11 +143,11 @@ button:disabled{cursor:not-allowed;opacity:.5}
  Leave empty until a mission page exists; no fake URL is used.
 ================================================================ */
 const MISSION_URLS = {
-  1: 'https://sites.google.com/view/wild-adventure-year-4/sing-into-the-wild?authuser=0', // Mission 1: Sing Into the Wild!
-  2: 'https://sites.google.com/view/wild-adventure-year-4/explore-the-wild?authuser=0', // Mission 2: Explore the Wild!
-  3: 'https://sites.google.com/view/wild-adventure-year-4/wild-explorer-mission?authuser=0', // Mission 3: Wild Explorer Mission!
-  4: 'https://sites.google.com/view/wild-adventure-year-4/wild-creator?authuser=0', // Mission 4: Wild Creator!
-  5: 'https://sites.google.com/view/wild-adventure-year-4/wild-adventure-final-challenge?authuser=0'  // Mission 5: Wild Adventure Final Challenge!
+  1: '', // Mission 1: Sing Into the Wild!
+  2: '', // Mission 2: Explore the Wild!
+  3: '', // Mission 3: Wild Explorer Mission!
+  4: '', // Mission 4: Wild Creator!
+  5: ''  // Mission 5: Wild Adventure Final Challenge!
 };
 const MISSIONS = [
  {name:'Sing Into the Wild!',description:'Watch the wild-animal video or song. Then share an animal opinion and a reason using Mentimeter.',actions:'YouTube + Mentimeter'},
