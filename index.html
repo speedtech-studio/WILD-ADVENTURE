@@ -1,125 +1,396 @@
-<!doctype html>
-<html lang="ms">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#174e40">
-  <meta name="description" content="Misi Bakul Nombor: latihan nombor 1–5 dengan pilihan kawalan tangan, sentuhan atau mouse untuk murid yang memerlukan sokongan numerasi.">
-  <title>Misi Bakul Nombor — Jom Kira Buah!</title>
-  <link rel="stylesheet" href="styles.css">
-  <script defer src="game.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#20543a">
+<title>Wild Adventure | Interactive Mission Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--forest:#214d36;--deep:#16392b;--gold:#ffe179;--wood:#704522;--paper:#fff2cf;--ink:#2c3026;--pixel:'Press Start 2P',monospace;--body:Nunito,'Trebuchet MS',Arial,sans-serif}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;background:#d8c58d;background-image:radial-gradient(circle at 8% 10%,#f2e5bb 0,transparent 42%),linear-gradient(135deg,#efe0b5,#cab17a 80%);color:var(--ink);font:600 17px/1.5 var(--body)}
+button,input{font:inherit}button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:4px solid #0872c3;outline-offset:4px}
+button:disabled{cursor:not-allowed;opacity:.5}
+.container{max-width:1360px;margin:auto;padding:16px clamp(10px,2.8vw,28px) 42px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;padding:13px 21px;background:var(--deep);color:#fff6d8;border:4px solid #86532f;box-shadow:0 6px #765328}
+.brand{font:clamp(11px,1.35vw,16px)/1.8 var(--pixel);color:var(--gold)}
+.top-note{font-weight:900;font-size:15px}
+.progress-badge{font:12px/1.7 var(--pixel);border:2px solid var(--gold);background:#355d3e;padding:8px 11px;white-space:nowrap}
+.intro{text-align:center;padding:24px 12px 18px}
+.eyebrow{font:10px/1.8 var(--pixel);color:#33603b;letter-spacing:.05em;margin:0 0 8px}
+.intro h1{font:clamp(16px,3vw,29px)/1.6 var(--pixel);color:#29492f;margin:0 0 9px;text-shadow:2px 2px #fff3c4}
+.intro p{margin:0 auto;max-width:850px;color:#493c28;font-weight:800;font-size:clamp(15px,1.5vw,19px)}
+.map-border{background:#fff4d3;border:7px solid #71502a;box-shadow:8px 8px 0 #866034,0 15px 30px #73522930;padding:6px;overflow:hidden}
+.map-scroll{overflow-x:auto;scrollbar-color:#8d682c #f3dfad;scrollbar-width:thin}
+.map-scroll:focus-visible{outline:4px solid #076dac;outline-offset:-4px}
+.map-stage{position:relative;width:100%;min-width:880px;aspect-ratio:1671/941;overflow:hidden;background:#70b6a0}
+.map-stage>img{display:block;width:100%;height:100%;user-select:none;pointer-events:none}
+.map-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#0000 70%,#101e0011 100%)}
+.mission-hotspot{position:absolute;display:block;background:transparent;border:0;border-radius:14px;transform:none;z-index:3}
+.mission-hotspot:hover{background:#ffe1662a;box-shadow:inset 0 0 0 4px #ffe887b8}
+.mission-hotspot:focus-visible{background:#ffda5660;outline-offset:-3px}
+.mission-hotspot[aria-disabled="true"]{cursor:not-allowed}
+.mission-hotspot.locked:hover{box-shadow:inset 0 0 0 3px #efc7c4a6;background:#6b453514}
+.map-sparkle{position:absolute;z-index:4;pointer-events:none;font:900 20px var(--body);color:#ffed91;text-shadow:2px 2px #724528,0 0 12px #ffd52d;transition:opacity .2s}
+.map-sparkle.done{color:#f9d54b}
+.avatar-token{position:absolute;left:24%;top:51%;width:104px;height:124px;transform:translate(-50%,-90%);z-index:5;pointer-events:none;filter:drop-shadow(0 5px 1px #302f1da6);will-change:left,top}
+.avatar-token:after{content:'';position:absolute;width:37px;height:8px;background:#1b372b70;border-radius:50%;bottom:0;left:50%;transform:translateX(-50%);z-index:-1}
+.avatar-token img,.avatar-token canvas{display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.avatar-token canvas{background:transparent}
+.avatar-token.is-moving img,.avatar-token.is-moving canvas{animation:step-walk .36s steps(2,end) infinite}
+@keyframes step-walk{50%{transform:translateY(-5px) rotate(2deg)}}
+.you-are-here{position:absolute;left:50%;bottom:88%;transform:translateX(-50%);white-space:nowrap;background:#d83e30;border:3px solid #fff6d8;box-shadow:3px 3px 0 #5d2d20;border-radius:9px;padding:6px 8px;color:white;font:9px/1.35 var(--pixel)}
+.you-are-here:after{content:'';position:absolute;left:calc(50% - 6px);top:100%;border:7px solid transparent;border-top-color:#fff6d8}
+.map-caption{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 14px;background:#f8edc8;font-size:14px;color:#594525;font-weight:900;border-top:2px dashed #ab8551}
+.milestone-bar{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin:22px auto 16px}
+.milestone{border:3px solid #9c794a;background:#fbf2d9;padding:9px 12px;min-width:135px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:3px 3px 0 #b39c73;font-weight:900;font-size:14px}
+.milestone b{display:grid;place-items:center;width:29px;height:29px;border:2px solid #b69043;background:#e4d4a9;border-radius:50%;font:800 12px var(--body)}
+.milestone.active{border-color:#bb632b;background:#fff0a9;color:#51341d;box-shadow:3px 3px 0 #cf8a31}
+.milestone.active b{background:#ffd23d}
+.milestone.completed{background:#d5ebba;border-color:#4c7c49;color:#285b38}
+.milestone.completed b{background:#528b4c;color:white;border-color:#3f693d}
+.card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;background:var(--paper);border:5px solid #77502a;box-shadow:6px 6px 0 #967347;padding:clamp(16px,2vw,26px);margin:10px auto 23px}
+.mini-label{display:inline-flex;background:#315e3c;color:#ffdfa1;padding:6px 10px;border:2px solid #2a4c31;font:10px/1.6 var(--pixel);letter-spacing:.02em}
+.card h2{font:clamp(15px,2vw,22px)/1.7 var(--pixel);color:#315333;margin:10px 0 8px}
+.card p{margin:0 0 8px;max-width:720px;font-size:17px}
+.card .status-text{font-weight:900;color:#84521f;margin-top:5px}
+.button-row{display:flex;gap:11px;flex-wrap:wrap;align-items:center;justify-content:flex-end;max-width:460px}
+.btn{display:inline-flex;align-items:center;justify-content:center;text-align:center;min-height:54px;padding:11px 16px;border:3px solid #684221;box-shadow:4px 4px 0 #6a4d2b;font-weight:900;border-radius:3px;line-height:1.3;background:#f5dfac;color:#38291b}
+.btn.gold{background:linear-gradient(#fff29c,#f8bd38);color:#463016}
+.btn.green{background:linear-gradient(#67af67,#2f783e);color:#fff8e5;border-color:#235037}
+.btn:hover:not(:disabled){filter:brightness(1.04);transform:translateY(-1px)}
+.btn:active:not(:disabled){transform:translate(2px,2px);box-shadow:2px 2px 0 #6a4d2b}
+.btn[hidden]{display:none}
+.hint{font-size:14px;color:#62543b}
+.instructions{background:#fff8e5;border:3px dashed #ad8650;padding:14px 19px;margin-top:15px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.instructions strong{color:#28583b}
+.instructions p{margin:0;flex:1;min-width:260px}
+.settings{margin-top:15px;background:#f9edce;border:2px solid #af9157;padding:12px 16px}
+.settings summary{cursor:pointer;font-weight:900;color:#365438}
+.settings-content{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.settings input[type=file]{max-width:275px;font-size:13px}
+.settings .btn{min-height:37px;padding:6px 11px;font-size:13px}
+.settings small{display:block;line-height:1.5;color:#675b45;margin-top:4px}
+.note{font-size:13px;color:#655538;text-align:center;margin-top:16px}
+#announcer{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.dialog-backdrop{position:fixed;inset:0;z-index:50;background:#162c27c9;display:grid;place-items:center;padding:20px}
+.dialog-backdrop[hidden]{display:none}
+.dialog{width:min(100%,520px);background:#fff1ce;border:6px solid #724a27;box-shadow:9px 9px 0 #141a12;padding:23px 24px}
+.dialog .pixel{font:17px/1.8 var(--pixel);color:#244b34;margin:0 0 12px}
+.dialog p{font-weight:700;font-size:17px;margin:0 0 15px}
+.dialog-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.toast{position:fixed;z-index:80;bottom:20px;left:50%;transform:translateX(-50%);background:#23533a;color:#fff5d7;box-shadow:6px 6px #3a3423;border:4px solid #edc95f;padding:11px 19px;max-width:min(92vw,570px);font-weight:900;text-align:center}
+.toast[hidden]{display:none}
+.confetti{position:fixed;top:-10px;z-index:99;width:10px;height:10px;pointer-events:none;animation:fall 1800ms ease-in forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:0}}
+@media(max-width:900px){.card{grid-template-columns:1fr}.button-row{max-width:none;justify-content:stretch}.button-row .btn{flex:1;min-width:200px}.map-stage{min-width:860px}.intro{padding-top:17px}.topbar{padding:11px}}
+@media(max-width:540px){.container{padding:9px 9px 35px}.intro h1{font-size:15px}.card{padding:14px}.card h2{font-size:13px}.button-row .btn{width:100%;flex:auto}.map-stage{min-width:800px}.milestone{min-width:97px;padding:8px;font-size:12px}.milestone b{width:23px;height:23px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
 </head>
 <body>
-  <a class="skip-link" href="#main">Langkau ke permainan</a>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand-icon" aria-hidden="true">🍓</div>
-      <div class="brand-copy">
-        <p class="eyebrow">BELAJAR • BERMAIN • BERJAYA</p>
-        <h1>Misi Bakul Nombor</h1>
-      </div>
-      <button class="top-help" id="openHelp" type="button">❔ <span>Cara bermain</span></button>
-    </header>
-
-    <div class="layout">
-      <aside class="sidebar" aria-label="Tetapan dan panduan">
-        <section class="sidebar-card welcome-card">
-          <p class="eyebrow">SELAMAT DATANG!</p>
-          <div class="welcome-fruits" aria-hidden="true">🍎 🍌 🍊</div>
-          <h2>Jom kira buah!</h2>
-          <p>Pilih cara bermain. Tiada masa terhad — belajar ikut kemampuan sendiri.</p>
-        </section>
-
-        <section class="sidebar-card">
-          <h2 class="section-title">🎮 Cara kawalan</h2>
-          <div class="mode-list" role="group" aria-label="Pilih kaedah kawalan">
-            <button type="button" class="mode-btn is-active" data-mode="touch" aria-pressed="true"><span class="mode-emoji">👆</span><span><strong>Sentuhan / mouse</strong><small>Tekan, pilih atau seret</small></span></button>
-            <button type="button" class="mode-btn" data-mode="point" aria-pressed="false"><span class="mode-emoji">☝️</span><span><strong>Point & Select</strong><small>Halakan jari, tunggu bulatan penuh</small></span></button>
-            <button type="button" class="mode-btn" data-mode="pinch" aria-pressed="false"><span class="mode-emoji">🤏</span><span><strong>Pinch & Drag</strong><small>Cubit untuk ambil / pilih</small></span></button>
-          </div>
-          <button id="cameraBtn" class="camera-btn" type="button" hidden>📷 Hidupkan webcam</button>
-          <div class="camera-preview" id="cameraPreview" hidden>
-            <video id="cameraVideo" playsinline muted autoplay aria-label="Pratonton webcam anda"></video>
-            <p class="camera-tag">Kamera aktif — video tidak dirakam</p>
-          </div>
-          <p class="control-status" id="cameraStatus" role="status">Gunakan jari atau mouse untuk bermain.</p>
-        </section>
-
-        <section class="sidebar-card teacher-card">
-          <h2 class="section-title">🧑‍🏫 Sudut guru</h2>
-          <label class="field-label" for="rangeSelect">Julat nombor</label>
-          <select id="rangeSelect"><option value="3">Nombor 1–3 (permulaan)</option><option value="5" selected>Nombor 1–5</option></select>
-          <p class="small-muted">Tetapan akan bermula semula dari pusingan pertama.</p>
-          <button class="secondary-button" type="button" id="hintBtn">💡 Tunjuk bantuan</button>
-          <button class="secondary-button" type="button" id="voiceBtn" aria-pressed="true">🔊 Audio: Hidup</button>
-          <button class="secondary-button" type="button" id="downloadBtn">📋 Eksport rekod CSV</button>
-          <button class="text-button" type="button" id="resetBtn">↻ Mulakan semula semua</button>
-        </section>
-
-        <section class="sidebar-card mini-note">
-          <h2 class="section-title">💚 Untuk semua murid</h2>
-          <p>Jika webcam tidak sesuai atau tidak dapat dihidupkan, pilih <strong>Sentuhan / mouse</strong>. Kejayaan matematik tidak bergantung pada kemahiran jari.</p>
-        </section>
-      </aside>
-
-      <main id="main" class="main-content">
-        <div class="stage-header">
-          <div>
-            <p class="eyebrow">PENGEMBARAAN NOMBOR 1–5</p>
-            <h2 id="stageTitle">Misi 1 · Jom Kira!</h2>
-            <p id="stageSubtitle" class="stage-subtitle">Kira buah dan pilih nombor yang betul.</p>
-          </div>
-          <div class="round-badge"><span id="roundText">Soalan 1 / 5</span><span class="star-icon" aria-hidden="true">⭐</span></div>
-        </div>
-
-        <div class="level-tabs" role="group" aria-label="Pilih misi">
-          <button type="button" class="level-tab active" data-level="1" aria-pressed="true"><span class="level-num">1</span> Jom Kira</button>
-          <button type="button" class="level-tab" data-level="2" aria-pressed="false"><span class="level-num">2</span> Isi Bakul</button>
-          <button type="button" class="level-tab" data-level="3" aria-pressed="false"><span class="level-num">3</span> Padankan</button>
-        </div>
-
-        <div class="progress-track" id="progressTrack" aria-label="Kemajuan bagi tahap ini"></div>
-
-        <section class="game-card" aria-label="Permainan numerasi">
-          <div class="instruction-box">
-            <div class="instruction-icon" aria-hidden="true">📣</div>
-            <div><span class="instruction-label">MISI SEKARANG</span><p id="instruction">Berapa biji buah yang kamu lihat?</p></div>
-            <button type="button" class="speak-btn" id="speakBtn" aria-label="Dengar arahan">🔈</button>
-          </div>
-          <div class="game-board" id="gameBoard" aria-live="off"></div>
-          <div id="hintPanel" class="hint-panel" hidden><strong>💡 Petunjuk</strong><span id="hintText"></span></div>
-          <div class="feedback" id="feedback" role="status" aria-live="polite"><span class="feedback-icon">🌟</span><span id="feedbackText">Jom mulakan! Pilih jawapan kamu.</span></div>
-          <div class="game-actions">
-            <button type="button" class="secondary-button" id="retryBtn">🔄 Cuba soalan ini lagi</button>
-            <button type="button" class="primary-button" id="nextBtn" hidden>Soalan seterusnya →</button>
-          </div>
-        </section>
-
-        <section class="stats-row" aria-label="Ringkasan pembelajaran sesi ini">
-          <div class="stat"><span class="stat-icon" aria-hidden="true">✅</span><div><strong id="correctStat">0</strong><span>Betul kali pertama</span></div></div>
-          <div class="stat"><span class="stat-icon" aria-hidden="true">🎯</span><div><strong id="completedStat">0</strong><span>Soalan selesai</span></div></div>
-          <div class="stat"><span class="stat-icon" aria-hidden="true">💡</span><div><strong id="hintsStat">0</strong><span>Soalan dengan bantuan</span></div></div>
-        </section>
-        <footer class="footer">Dibangunkan untuk latihan numerasi berasaskan profil simulasi MBPK diskalkulia. <strong>Tiada video webcam atau nama murid disimpan.</strong></footer>
-      </main>
-    </div>
+<div class="container">
+<header class="topbar">
+ <div><div class="brand">WILD ADVENTURE</div><div class="top-note">Your Interactive Journey Map</div></div>
+ <div class="progress-badge" id="topProgress">0 / 5 COMPLETE</div>
+</header>
+<section class="intro" aria-labelledby="pageTitle">
+ <p class="eyebrow">YOUR JUNGLE ADVENTURE STARTS HERE</p>
+ <h1 id="pageTitle">THE ADVENTURE MAP</h1>
+ <p>Follow the trail, open each mission, and return to the map to mark your mission complete. Watch your Pixel Explorer reach the next checkpoint!</p>
+</section>
+<div class="map-border">
+ <div class="map-scroll" id="mapScroll" tabindex="0" aria-label="Adventure Map. On a phone, swipe sideways to explore the whole map.">
+  <div class="map-stage" id="mapStage">
+   <img src="assets/jumanji-adventure-map.png" alt="Pixel jungle map with five mission signboards connected by a red dotted trail, from Start to Finish" draggable="false">
+   <div class="map-shade"></div>
+   <button class="mission-hotspot" data-mission="1" style="left:20%;top:31%;width:18.5%;height:17%" aria-label="Mission 1: Sing Into the Wild"></button>
+   <button class="mission-hotspot" data-mission="2" style="left:44%;top:26%;width:18.7%;height:17%" aria-label="Mission 2: Explore the Wild"></button>
+   <button class="mission-hotspot" data-mission="3" style="left:70%;top:31%;width:20%;height:17%" aria-label="Mission 3: Wild Explorer Mission"></button>
+   <button class="mission-hotspot" data-mission="4" style="left:60%;top:56%;width:21%;height:19%" aria-label="Mission 4: Wild Creator"></button>
+   <button class="mission-hotspot" data-mission="5" style="left:32%;top:69%;width:20.5%;height:20%" aria-label="Mission 5: Wild Adventure Final Challenge"></button>
+   <div class="avatar-token" id="avatarToken" aria-hidden="true"><div class="you-are-here">YOU ARE HERE!</div><canvas id="avatarCanvas" width="120" height="144"></canvas><img id="uploadedAvatar" alt="" hidden></div>
   </div>
+ </div>
+ <div class="map-caption"><span>🧭 Follow the red dotted trail from <b>START</b> to <b>FINISH</b>.</span><span>📱 On a phone, swipe the map left or right.</span></div>
+</div>
+<div class="milestone-bar" id="milestoneBar" role="list" aria-label="Mission progress"></div>
+<section class="card" id="missionCard" aria-labelledby="missionTitle">
+ <div><span class="mini-label" id="missionLabel">MISSION 1 · CURRENT CHECKPOINT</span><h2 id="missionTitle">Sing Into the Wild!</h2><p id="missionDescription">Watch the animal song and share an opinion.</p><p class="status-text" id="missionStatus">Your first mission is ready!</p></div>
+ <div class="button-row">
+  <button class="btn gold" id="openMissionBtn">▶ OPEN MISSION 1</button>
+  <button class="btn green" id="doneBtn">✓ I'M DONE HERE!</button>
+  <button class="btn green" id="nextMissionBtn" hidden>➜ NEXT MISSION</button>
+ </div>
+</section>
+<div class="instructions"><strong>HOW TO PLAY</strong><p>1. Open the current mission. 2. Complete the activities and submit your work. 3. Return here and select <b>“I'M DONE HERE!”</b> to unlock the next checkpoint.</p></div>
+<details class="settings"><summary>🎒 Explorer options</summary><div class="settings-content"><label for="avatarFile"><b>Use my Explorer Avatar PNG:</b></label><input id="avatarFile" type="file" accept="image/png,image/webp,image/jpeg"><button class="btn" id="defaultAvatarBtn" type="button">Use default Explorer</button><button class="btn" id="resetBtn" type="button">Reset mission progress</button></div><small>Optional: upload the avatar PNG you saved during Explorer's Check-In. On a shared device, choose Reset before another pupil starts. Progress is saved in this browser only.</small></details>
+<p class="note">Mission completion is a pupil self-check, not automatic assessment. Your teacher reviews your activity responses separately.</p>
+</div>
+<div class="dialog-backdrop" id="confirmBackdrop" hidden><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle" aria-describedby="dialogText"><h2 class="pixel" id="dialogTitle">ARE YOU DONE HERE?</h2><p id="dialogText">Have you completed the activities and submitted your work for this mission? Confirm to move to the next checkpoint.</p><div class="dialog-actions"><button class="btn" id="cancelDone">NOT YET</button><button class="btn green" id="confirmDone">YES, I'M DONE!</button></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div id="announcer" aria-live="polite"></div>
+<script>
+'use strict';
+/* ================================================================
+ TEACHER SETUP: PASTE THE FIVE PUBLISHED GOOGLE SITES MISSION URLS.
+ Leave empty until a mission page exists; no fake URL is used.
+================================================================ */
+const MISSION_URLS = {
+  1: '', // Mission 1: Sing Into the Wild!
+  2: '', // Mission 2: Explore the Wild!
+  3: '', // Mission 3: Wild Explorer Mission!
+  4: '', // Mission 4: Wild Creator!
+  5: ''  // Mission 5: Wild Adventure Final Challenge!
+};
+const MISSIONS = [
+ {name:'Sing Into the Wild!',description:'Watch the wild-animal video or song. Then share an animal opinion and a reason using Mentimeter.',actions:'YouTube + Mentimeter'},
+ {name:'Explore the Wild!',description:'Discover wild animals with Canva, create your Book Creator response, and complete the illustrated story and FigJam Opinion Board.',actions:'Canva + Book Creator + Story + FigJam'},
+ {name:'Wild Explorer Mission!',description:'Complete the four Genially challenges, then explain your favourite animal and reasons on Canva Whiteboard.',actions:'Genially + Canva Whiteboard'},
+ {name:'Wild Creator!',description:'Draw an imaginary creature, bring it to life in Wild Creator, describe it with two words, and explain your opinions and reasons.',actions:'Wild Creator'},
+ {name:'Wild Adventure Final Challenge!',description:'Complete the individual Wordwall challenge, then share a reflection and meaningful peer comments on Padlet.',actions:'Wordwall + Padlet'}
+];
+/* Pixel trail coordinates measured against the APPROVED map image. */
+const POINTS=[null,{x:24,y:51},{x:44,y:45},{x:82,y:53},{x:57,y:70},{x:53,y:81},{x:28,y:80}];
+const TRAILS={
+ 1:[[24,51],[29,54],[35,53],[40,46],[44,45]],
+ 2:[[44,45],[54,41],[62,42],[70,49],[77,49],[82,53]],
+ 3:[[82,53],[82,61],[77,67],[67,67],[57,70]],
+ 4:[[57,70],[55,70],[52,74],[53,81]],
+ 5:[[53,81],[46,81],[39,80],[34,79],[28,80]]
+};
+const STORAGE_KEY='wildAdventure_map_checkpoint_v4';
+const AVATAR_KEY='wildAdventure_map_avatar_v2';
+const $=id=>document.getElementById(id);
+const store={get(key){try{return localStorage.getItem(key)}catch(e){return null}},set(key,value){try{localStorage.setItem(key,value);return true}catch(e){return false}},remove(key){try{localStorage.removeItem(key)}catch(e){}}};
+let current=Math.max(1,Math.min(6,parseInt(store.get(STORAGE_KEY)||'1',10)||1));
+let selected=Math.min(current,5);
+let moving=false,showNext=false,toastTimer;
+function showToast(msg){$('toast').textContent=msg;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,4200)}
+function say(msg){$('announcer').textContent=msg}
+const skinColors={'Light':'#f1c29b','Warm':'#e8a876','Tan':'#b77c50','Deep':'#7b482e'};
+const colors={'Khaki':'#b89458','Forest Green':'#487b4b','Sky Blue':'#669fc5','Coral':'#df7b65'};
+const state={character:'Girl',outfit:'Safari Jacket',shirtColor:'Khaki',skinTone:'Warm',hairstyle:'Hijab',buddy:'Tiger',hat:true,glasses:true,binoculars:true};
+function rect(ctx,x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
+function stroke(ctx,x,y,w,h,c,thick=2){rect(ctx,x,y,w,thick,c);rect(ctx,x,y+h-thick,w,thick,c);rect(ctx,x,y,thick,h,c);rect(ctx,x+w-thick,y,thick,h,c)}
+function drawBuddy(ctx,buddy){
+ if(buddy==='None')return;
+ const ox=94,oy=111,d='#2a342c';
+ if(buddy==='Penguin'){
+ rect(ctx,ox+5,oy+1,18,23,d);rect(ctx,ox+7,oy+5,14,18,'#455b68');rect(ctx,ox+10,oy+8,8,12,'#f3e8d1');rect(ctx,ox+9,oy+4,3,3,'#f6f6eb');rect(ctx,ox+17,oy+4,3,3,'#f6f6eb');rect(ctx,ox+13,oy+10,4,3,'#efa739');rect(ctx,ox+6,oy+22,8,3,'#e8a03f');rect(ctx,ox+17,oy+22,8,3,'#e8a03f');
+ }else if(buddy==='Tiger'){
+ rect(ctx,ox+3,oy+5,24,17,d);rect(ctx,ox+5,oy+7,20,15,'#eca847');rect(ctx,ox+4,oy+2,8,8,d);rect(ctx,ox+18,oy+2,8,8,d);rect(ctx,ox+5,oy+4,5,5,'#eca847');rect(ctx,ox+20,oy+4,5,5,'#eca847');rect(ctx,ox+10,oy+12,3,3,d);rect(ctx,ox+19,oy+12,3,3,d);rect(ctx,ox+13,oy+17,6,5,'#f7dfac');rect(ctx,ox+15,oy+16,2,3,d);rect(ctx,ox+8,oy+8,3,5,d);rect(ctx,ox+21,oy+8,3,5,d);rect(ctx,ox+13,oy+8,5,3,d);
+ }else if(buddy==='Monkey'){
+ rect(ctx,ox+3,oy+6,25,18,d);rect(ctx,ox+6,oy+8,19,17,'#8d603b');rect(ctx,ox+10,oy+10,12,12,'#dec29a');rect(ctx,ox+2,oy+10,7,9,'#8d603b');rect(ctx,ox+24,oy+10,7,9,'#8d603b');rect(ctx,ox+12,oy+13,2,3,d);rect(ctx,ox+19,oy+13,2,3,d);rect(ctx,ox+14,oy+19,5,2,d);
+ }else{
+ rect(ctx,ox+3,oy+8,24,17,d);rect(ctx,ox+5,oy+10,20,15,'#8496a2');rect(ctx,ox+7,oy+4,13,13,'#a4b2b8');rect(ctx,ox+18,oy+12,10,13,'#a4b2b8');rect(ctx,ox+24,oy+14,5,17,'#8496a2');rect(ctx,ox+11,oy+12,3,3,d);rect(ctx,ox+15,oy+18,7,3,'#7a8b91');
+ }
+}
+function drawAvatar(canvas){
+ const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,120,144);
+ const dark='#28342b', outline='#30452b', skin=skinColors[state.skinTone],shirt=colors[state.shirtColor];
+ // Stylised pixel landscape around a single main explorer.
+ for(let x=3;x<118;x+=12){rect(ctx,x,135,9,3,'#2d7346');rect(ctx,x+4,131,3,5,'#479458');}
+ rect(ctx,18,139,87,3,'#306446');rect(ctx,22,136,82,3,'#56894b');
+ // Backpack & rolled blanket.
+ rect(ctx,30,76,16,43,dark);rect(ctx,32,79,13,38,'#6c583b');rect(ctx,27,71,15,8,dark);rect(ctx,28,72,13,6,'#879064');
+ rect(ctx,34,66,8,11,'#554e35');rect(ctx,36,64,4,13,'#8e916e');
+ // Boots, trousers & belt.
+ rect(ctx,41,114,17,26,dark);rect(ctx,62,114,18,26,dark);rect(ctx,44,116,12,24,'#77674f');rect(ctx,65,116,12,24,'#77674f');
+ rect(ctx,37,137,24,7,dark);rect(ctx,61,137,24,7,dark);rect(ctx,40,137,20,5,'#493c2d');rect(ctx,64,137,18,5,'#493c2d');
+ // Sleeves: all options are long sleeved.
+ rect(ctx,29,81,14,35,dark);rect(ctx,30,83,11,30,shirt);rect(ctx,80,81,14,35,dark);rect(ctx,83,83,9,30,shirt);
+ rect(ctx,31,112,12,9,dark);rect(ctx,34,113,7,7,skin);rect(ctx,81,112,12,9,dark);rect(ctx,83,113,7,7,skin);
+ // Main outfit.
+ rect(ctx,40,75,43,44,dark);rect(ctx,43,77,37,39,shirt);
+ if(state.outfit==='Safari Jacket'){
+  rect(ctx,58,80,4,31,'#e0cb98');rect(ctx,46,93,12,12,'#e2c68b');rect(ctx,63,93,13,12,'#e2c68b');
+  stroke(ctx,46,92,12,14,'#785c3b',2);stroke(ctx,64,92,12,14,'#785c3b',2);rect(ctx,57,83,2,2,'#4e452b');rect(ctx,57,89,2,2,'#4e452b');
+ }else if(state.outfit==='Adventure Vest'){
+  rect(ctx,44,78,10,29,'#6d583c');rect(ctx,69,78,10,29,'#6d583c');rect(ctx,45,96,8,9,'#b6a27a');rect(ctx,70,96,8,9,'#b6a27a');rect(ctx,58,81,5,28,'#d4ca9a');
+ }else{
+  rect(ctx,48,78,27,18,'#f3d3aa');rect(ctx,50,80,23,15,shirt);rect(ctx,55,86,2,12,'#d5e5c4');rect(ctx,66,86,2,12,'#d5e5c4');rect(ctx,48,107,26,7,'#3d5b40');
+ }
+ rect(ctx,40,114,43,7,dark);rect(ctx,43,115,37,3,'#5b482e');rect(ctx,57,113,9,8,'#e8c16c');rect(ctx,59,114,5,5,'#695230');
+ // Neck and head: hairstyle/hijab selectable for every character.
+ rect(ctx,54,69,15,14,dark);rect(ctx,57,69,10,14,skin);
+ if(state.hairstyle==='Hijab'){
+  rect(ctx,39,36,47,47,dark);rect(ctx,43,32,39,45,'#202c2a');rect(ctx,44,45,38,36,'#1f2928');
+  rect(ctx,47,41,32,32,skin);rect(ctx,45,53,4,18,'#202c2a');rect(ctx,78,50,5,23,'#202c2a');rect(ctx,47,68,11,11,'#202c2a');rect(ctx,70,68,11,11,'#202c2a');
+  rect(ctx,49,73,29,8,'#202c2a');
+ }else{
+  rect(ctx,42,33,42,45,dark);rect(ctx,45,37,36,38,skin);
+  if(state.hairstyle==='Short Hair'){
+   rect(ctx,43,36,39,13,'#49362a');rect(ctx,45,32,34,9,'#49362a');rect(ctx,43,45,5,12,'#49362a');rect(ctx,80,42,4,12,'#49362a');
+  }else if(state.hairstyle==='Long Hair'){
+   rect(ctx,42,37,8,45,'#4e3729');rect(ctx,75,37,9,45,'#4e3729');rect(ctx,44,31,37,12,'#4e3729');
+  }else{rect(ctx,48,36,27,3,'#db9b70');}
+ }
+ // Eyes and expression.
+ rect(ctx,52,55,5,6,dark);rect(ctx,70,55,5,6,dark);rect(ctx,53,55,2,2,'#fffbea');rect(ctx,71,55,2,2,'#fffbea');
+ rect(ctx,52,49,6,2,'#4d392f');rect(ctx,69,49,6,2,'#4d392f');
+ rect(ctx,55,67,3,2,'#e58d74');rect(ctx,73,67,3,2,'#e58d74');rect(ctx,61,67,7,2,'#7b483e');rect(ctx,62,69,5,2,'#b25c52');
+ // Optional glasses (pixel-square frame).
+ if(state.glasses){stroke(ctx,48,51,13,13,'#343a2c',2);stroke(ctx,67,51,13,13,'#343a2c',2);rect(ctx,60,55,8,2,'#343a2c');rect(ctx,42,53,6,2,'#343a2c');rect(ctx,79,53,6,2,'#343a2c');}
+ // Headwear. Safari hat is optional.
+ if(state.hat){rect(ctx,42,25,39,10,dark);rect(ctx,45,23,33,11,'#dac08e');rect(ctx,42,34,41,5,'#8b7850');rect(ctx,34,34,55,7,dark);rect(ctx,37,35,50,5,'#d6b77c');rect(ctx,46,27,31,4,'#f2deaa');rect(ctx,47,34,31,3,'#526e4d');}
+ // Backpack shoulder straps & binoculars.
+ rect(ctx,45,80,3,27,'#5b4d32');rect(ctx,77,80,3,27,'#5b4d32');
+ if(state.binoculars){rect(ctx,55,91,16,3,dark);rect(ctx,53,94,8,17,dark);rect(ctx,64,94,8,17,dark);rect(ctx,55,96,5,12,'#435a56');rect(ctx,65,96,5,12,'#435a56');rect(ctx,54,107,7,5,'#345c68');rect(ctx,64,107,7,5,'#345c68');rect(ctx,57,81,2,12,'#443f35');rect(ctx,68,81,2,12,'#443f35');}
+ // Character style modifies small pin: all combinations remain available.
+ const pin=state.character==='Girl'?'#e56b79':state.character==='Boy'?'#78a8dd':'#f3ce66';rect(ctx,74,85,6,6,dark);rect(ctx,75,86,4,4,pin);
+ drawBuddy(ctx,state.buddy);
+}
 
-  <div id="handCursor" class="hand-cursor" hidden aria-hidden="true"><span id="handCursorSymbol">☝️</span><span class="cursor-ring"></span><span id="carriedFruit" class="carried-fruit"></span></div>
-
-  <dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle">
-    <form method="dialog" class="help-body"><button type="submit" class="close-help" aria-label="Tutup">✕</button>
-      <h2 id="helpTitle">🌻 Cara bermain</h2>
-      <p><strong>Misi 1 — Jom Kira:</strong> Kira buah yang dipaparkan, kemudian pilih simbol nombor yang betul.</p>
-      <p><strong>Misi 2 — Isi Bakul:</strong> Masukkan bilangan buah mengikut nombor. Sentuh buah, kemudian bakul, atau seret buah ke bakul. Tekan <em>Semak bakul</em> selepas siap.</p>
-      <p><strong>Misi 3 — Padankan:</strong> Cari gambar kumpulan buah yang sepadan dengan nombor.</p>
-      <h3>🎥 Kawalan webcam</h3>
-      <p><strong>Point & Select:</strong> Halakan jari telunjuk ke pilihan, tahan hingga bulatan penunjuk penuh. Untuk Misi 2, pilih buah dahulu, kemudian halakan ke bakul.</p>
-      <p><strong>Pinch & Drag:</strong> Cantumkan ibu jari dan telunjuk untuk memilih. Dalam Misi 2, cubit di atas buah, bawa ke bakul, lalu lepaskan. Anda juga boleh memilih buah dan kemudian mencubit di atas bakul.</p>
-      <p><strong>Sentuhan / mouse:</strong> Boleh digunakan tanpa kamera. Semua misi boleh diselesaikan menggunakan kaedah ini.</p>
-      <p>Kamera hanya diaktifkan selepas mendapat kebenaran, video dianalisis dalam browser, dan tiada rakaman dimuat naik oleh permainan. MediaPipe memerlukan internet untuk memuatkan pustaka dan model.</p>
-      <button type="submit" class="primary-button">Faham, jom main!</button>
-    </form>
-  </dialog>
+function setPosition(pt){const el=$('avatarToken');el.style.left=pt.x+'%';el.style.top=pt.y+'%'}
+function centreOn(pt,smooth=true){const wrap=$('mapScroll'),map=$('mapStage');if(wrap.clientWidth>=map.clientWidth)return;
+ const px=map.clientWidth*pt.x/100-wrap.clientWidth/2;
+ wrap.scrollTo({left:Math.max(0,px),behavior:smooth?'smooth':'auto'});
+}
+function getPointOnPath(route,t){
+ const seg=[],lens=[];let total=0;
+ for(let i=1;i<route.length;i++){
+  const x=route[i][0]-route[i-1][0],y=route[i][1]-route[i-1][1],l=Math.hypot(x,y);seg.push([x,y]);lens.push(l);total+=l;
+ }
+ let travelled=t*total;
+ for(let i=0;i<lens.length;i++){
+  if(travelled<=lens[i]||i===lens.length-1){const q=lens[i]?Math.min(1,travelled/lens[i]):1;return{x:route[i][0]+seg[i][0]*q,y:route[i][1]+seg[i][1]*q}}
+  travelled-=lens[i];
+ }
+ return{x:route.at(-1)[0],y:route.at(-1)[1]};
+}
+function walk(from,to,whenDone){
+ const path=TRAILS[from];if(!path){setPosition(POINTS[to]);whenDone();return}
+ moving=true;$('avatarToken').classList.add('is-moving');
+ const noMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(noMotion){setPosition(POINTS[to]);moving=false;$('avatarToken').classList.remove('is-moving');whenDone();return}
+ const duration=1850;let start=null;
+ function tick(ts){if(start===null)start=ts;
+  const t=Math.min(1,(ts-start)/duration),ease=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+  const point=getPointOnPath(path,ease);setPosition(point);
+  if(t<1){requestAnimationFrame(tick)}else{moving=false;$('avatarToken').classList.remove('is-moving');setPosition(POINTS[to]);centreOn(POINTS[to]);whenDone()}
+ }
+ requestAnimationFrame(tick);
+}
+function drawTokens(){
+ const bar=$('milestoneBar');bar.innerHTML='';
+ for(let i=1;i<=5;i++){
+  const btn=document.createElement('button');btn.type='button';btn.className='milestone '+(i<current?'completed':i===current?'active':'locked');
+  const label=i<current?'Complete':i===current?'Current':'Locked';
+  btn.innerHTML='<b>'+(i<current?'✓':i)+'</b><span>Mission '+i+'</span>';
+  btn.setAttribute('aria-label','Mission '+i+': '+MISSIONS[i-1].name+', '+label);
+  if(i>current){btn.disabled=true;btn.title='Finish earlier missions first'}
+  else{btn.addEventListener('click',()=>selectMission(i))}
+  bar.appendChild(btn);
+ }
+ document.querySelectorAll('.mission-hotspot').forEach(btn=>{
+  const i=+btn.dataset.mission;btn.classList.toggle('locked',i>current);btn.setAttribute('aria-disabled',String(i>current));
+  btn.title='Mission '+i+': '+MISSIONS[i-1].name+(i>current?' (locked)':'');
+ });
+ $('topProgress').textContent=Math.min(5,current-1)+' / 5 COMPLETE';
+}
+function render(){
+ drawTokens();const isComplete=current===6;
+ if(isComplete){
+   $('missionLabel').textContent='✦ YOU MADE IT! ✦';$('missionTitle').textContent='ADVENTURE COMPLETED!';
+   $('missionDescription').textContent='You reached the finish line and stamped all five missions. Great job, Wild Explorer!';
+   $('missionStatus').textContent='Celebrate your achievement! Your teacher will review the learning activities.';
+   $('openMissionBtn').hidden=true;$('doneBtn').hidden=true;$('nextMissionBtn').hidden=true;
+   return;
+ }
+ const m=MISSIONS[selected-1],past=selected<current;
+ $('missionLabel').textContent='MISSION '+selected+' · '+(past?'COMPLETED':'CURRENT CHECKPOINT');
+ $('missionTitle').textContent=m.name;
+ $('missionDescription').textContent=m.description;
+ $('missionStatus').textContent=past?'✓ Mission completed. You can revisit its activities.':'Learning activities: '+m.actions;
+ $('openMissionBtn').hidden=showNext&&!past;$('openMissionBtn').textContent=(past?'↗ REVISIT MISSION ':'▶ OPEN MISSION ')+selected;
+ $('doneBtn').hidden=past||moving||showNext;$('doneBtn').disabled=moving;
+ $('nextMissionBtn').hidden=!past&&!showNext;
+ $('nextMissionBtn').textContent='➜ '+(past?'CURRENT MISSION '+current:'NEXT MISSION '+current);
+}
+function selectMission(i){
+ if(i>current){showToast('Complete Mission '+current+' first to unlock this checkpoint.');return}
+ if(current===6){showToast('Congratulations! You have completed all five missions.');return}
+ selected=i;render();$('missionCard').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function openMission(i){
+ const url=(MISSION_URLS[i]||'').trim();
+ if(!/^https:\/\/[^\s]+$/i.test(url)){
+  showToast('Mission '+i+' is ready to link. Your teacher will add its Google Sites page URL.');return;
+ }
+ // A new tab keeps this map open for the pupil to return and stamp the mission.
+ const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';document.body.appendChild(a);a.click();a.remove();
+ say('Mission '+i+' opened in a new tab. Return here when you finish.');
+}
+function setDialog(open){$('confirmBackdrop').hidden=!open;if(open)$('cancelDone').focus();else $('doneBtn').focus()}
+function celebrate(){
+ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const shades=['#f8cd43','#e37931','#7fb658','#fffbba','#d54e32'];
+ for(let j=0;j<44;j++){
+  const el=document.createElement('span');el.className='confetti';el.style.left=Math.random()*100+'vw';el.style.background=shades[j%shades.length];
+  el.style.animationDelay=(Math.random()*.75)+'s';el.style.animationDuration=(1.3+Math.random()*1.1)+'s';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),3600);
+ }
+}
+function completeMission(){
+ if(moving||current>=6)return;
+ const finished=current;setDialog(false);$('doneBtn').disabled=true;showNext=false;
+ say('Mission '+finished+' finished! Your explorer is moving to the next checkpoint.');
+ walk(finished,finished+1,()=>{
+  current=finished+1;selected=Math.min(current,5);showNext=current<=5;
+  const saved=store.set(STORAGE_KEY,String(current));
+  render();
+  if(current===6){celebrate();showToast('🏆 Adventure completed! All five missions are stamped.');}
+  else{showToast('🌟 Mission '+finished+' complete! Mission '+current+' is now unlocked.');}
+  if(!saved)showToast('Your browser cannot save progress right now. Keep this map open until you finish.');
+  say(current===6?'Adventure complete!':('Mission '+current+' is unlocked!'));
+ });
+}
+function restoreAvatar(){
+ // Try the check-in avatar if this map is hosted at the SAME browser origin.
+ const raw=store.get('wild-adventure-pixel-avatar');
+ if(raw){try{const saved=JSON.parse(raw);for(const k of Object.keys(state)){
+  if(typeof state[k]==='boolean' && typeof saved[k]==='boolean')state[k]=saved[k];
+  else if(typeof state[k]==='string'&&typeof saved[k]==='string')state[k]=saved[k];
+ }}catch(e){}}
+ drawAvatar($('avatarCanvas'));
+ const savedImage=store.get(AVATAR_KEY);
+ if(savedImage&&/^data:image\//.test(savedImage))setAvatarImage(savedImage);
+}
+function setAvatarImage(data){const img=$('uploadedAvatar');img.onload=()=>{img.hidden=false;$('avatarCanvas').hidden=true};img.onerror=()=>showToast('That avatar image could not be opened.');img.src=data;}
+$('openMissionBtn').addEventListener('click',()=>openMission(selected));
+$('nextMissionBtn').addEventListener('click',()=>{if(selected<current){selected=current;render()}else{showNext=false;render();openMission(current)}});
+$('doneBtn').addEventListener('click',()=>{if(selected===current&&!moving)setDialog(true)});
+$('cancelDone').addEventListener('click',()=>setDialog(false));
+$('confirmDone').addEventListener('click',completeMission);
+$('confirmBackdrop').addEventListener('click',e=>{if(e.target===e.currentTarget)setDialog(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('confirmBackdrop').hidden)setDialog(false)});
+document.querySelectorAll('.mission-hotspot').forEach(btn=>btn.addEventListener('click',()=>selectMission(+btn.dataset.mission)));
+$('avatarFile').addEventListener('change',e=>{
+ const file=e.target.files[0];if(!file)return;
+ if(!file.type.startsWith('image/')||file.size>2*1024*1024){showToast('Please choose a JPG, PNG or WebP image smaller than 2 MB.');return}
+ const r=new FileReader();r.onload=()=>{
+  const data=String(r.result);setAvatarImage(data);
+  if(!store.set(AVATAR_KEY,data))showToast('Avatar displayed. Your browser may not remember it after a refresh.');
+  else showToast('Your own Explorer avatar is ready!');
+ };r.readAsDataURL(file);
+});
+$('defaultAvatarBtn').addEventListener('click',()=>{store.remove(AVATAR_KEY);$('uploadedAvatar').hidden=true;$('uploadedAvatar').removeAttribute('src');$('avatarCanvas').hidden=false;showToast('Default Pixel Explorer restored.');});
+$('resetBtn').addEventListener('click',()=>{
+ if(!confirm('Reset your mission progress on this browser? This will not change attendance records.'))return;
+ store.remove(STORAGE_KEY);current=1;selected=1;showNext=false;moving=false;setPosition(POINTS[1]);centreOn(POINTS[1]);render();showToast('Progress reset to Mission 1.');
+});
+window.addEventListener('storage',e=>{
+ if(e.key===STORAGE_KEY&&!moving){current=Math.max(1,Math.min(6,parseInt(e.newValue||'1',10)||1));selected=Math.min(current,5);setPosition(POINTS[current]);render()}
+});
+restoreAvatar();setPosition(POINTS[current]);render();
+window.addEventListener('load',()=>setTimeout(()=>centreOn(POINTS[current],false),180));
+</script>
 </body>
 </html>
