@@ -1,0 +1,10 @@
+<!-- WILD ADVENTURE: FULL PAGE EMBED -->
+<!-- First publish the index.html + assets folder on GitHub Pages. -->
+<!-- Replace YOUR_USERNAME and YOUR_REPOSITORY with your real published URL. -->
+<iframe
+  title="Wild Adventure | Interactive Jumanji Mission Map"
+  src="https://YOUR_USERNAME.github.io/YOUR_REPOSITORY/"
+  style="display:block;width:100%;height:95vh;min-height:700px;border:0;"
+  loading="eager"
+  allowfullscreen
+></iframe>
